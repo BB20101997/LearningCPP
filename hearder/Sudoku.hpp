@@ -29,6 +29,6 @@ class Sudoku {
 
 
 
-#include "Sudoku.cpp"
+#include "../Sudoku.cpp"
 
 #endif //LEARNINGCPP_SUDOKU_HPP
