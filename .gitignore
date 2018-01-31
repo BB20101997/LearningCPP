@@ -3,3 +3,4 @@
 /cmake-build-release/
 /.vs/
 *.json
+/cmake-build-debug-mingw/
