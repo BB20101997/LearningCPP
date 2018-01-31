@@ -2,8 +2,8 @@
 // Created by Bennet on 29. Jan. 2018.
 //
 
-#ifndef LEARNINGCPP_SUDOKU_HPP
-#define LEARNINGCPP_SUDOKU_HPP
+#ifndef LEARNING_CPP_SUDOKU_HPP
+#define LEARNING_CPP_SUDOKU_HPP
 
 #include <array>
 #include <iostream>
@@ -14,7 +14,7 @@ class Sudoku {
     private:
         static std::mt19937 rng;
         static bool seeded;
-        static std::uniform_int_distribution<int> dist;
+        static std::uniform_int_distribution<size_t> dist;
         using Grid_t = std::array<std::array<size_t, Size>, Size>;
 
         const bool checkRange(size_t x) const;
@@ -52,4 +52,4 @@ class Sudoku {
 
 #include "../Sudoku.cpp"
 
-#endif //LEARNINGCPP_SUDOKU_HPP
+#endif //LEARNING_CPP_SUDOKU_HPP

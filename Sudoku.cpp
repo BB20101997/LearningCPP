@@ -1,11 +1,10 @@
 //
 // Created by Bennet on 29. Jan. 2018.
 //
-#ifndef LEARNINGCPP_SUDOKU_CPP
-#define LEARNINGCPP_SUDOKU_CPP
+#ifndef LEARNING_CPP_SUDOKU_CPP
+#define LEARNING_CPP_SUDOKU_CPP
 
 #include "Sudoku.hpp"
-#include <exception>
 #include <sstream>
 
 template<size_t Size>
@@ -15,7 +14,7 @@ template<size_t Size>
 std::mt19937 Sudoku<Size>::rng; // NOLINT
 
 template<size_t Size>
-std::uniform_int_distribution<int> Sudoku<Size>::dist(1, Size); // NOLINT
+std::uniform_int_distribution<size_t> Sudoku<Size>::dist{1, Size}; // NOLINT
 
 template<size_t Size>
 inline const bool Sudoku<Size>::checkRange(const size_t x) const {
@@ -30,28 +29,22 @@ inline const bool Sudoku<Size>::checkRange(size_t x, size_t y) const {
 
 template<size_t Size>
 void Sudoku<Size>::generateRandom() {
-    int x, y, v;
-    if (!seeded) {
+    size_t x, y, v;
+    if (!Sudoku<Size>::seeded) {
         rng.seed(std::random_device()());
-        seeded = true;
+        Sudoku<Size>::seeded = true;
     }
 
     int count = 0;
     while (count <= Size * Size / 3) {
-        x = dist(rng)-1;
-        y = dist(rng)-1;
+        x = dist(rng) - 1;
+        y = dist(rng) - 1;
         v = dist(rng);
-        if (valueAt(x, y) <= 0) {
-            grid[x][y] = v;
-            if (isCorrect()) {
-                count++;
-            }else{
-                grid[x][y] = 0;
-            }
+        if (tryInsert(v, x, y)) {
+            count++;
         }
     }
-    //TODO
-
+    //TODO check for solveability
 };
 
 template<size_t Size>
@@ -69,37 +62,42 @@ const bool Sudoku<Size>::isSolved() const {
 template<size_t Size>
 const size_t Sudoku<Size>::valueAt(const size_t x, const size_t y) const {
     if (!checkRange(x, y)) {
-        throw new std::runtime_error{"IndexOutOfBounds"};
-	}
+        throw std::runtime_error{"IndexOutOfBounds"};
+    }
     return grid[x][y];
 };
 
 
 template<size_t Size>
 const bool Sudoku<Size>::tryInsert(const size_t value, const size_t x, const size_t y) {
-    if (!(value > 0 && value <= Size))
+    if (!(value > 0 && value <= Size)) {
+        return false; //value out of range
+    }
 
-        if (!checkRange(x, y)) {
-            return false;
-        }
+    if (!checkRange(x, y)) {
+        return false; //coordinates out of range
+    }
 
     if (valueAt(x, y) > 0) {
-        return false;
+        return false; //field already set
     }
 
     grid[x][y] = value;
+    if (!isCorrect()) {
+        grid[x][y] = 0; //reset since it is not a valid move
+        return false;
+    }
     return true;
-
 };
 
 template<size_t Size>
-Sudoku<Size>::Sudoku(size_t w, size_t h):inside_height(h), inside_width(w) {
+Sudoku<Size>::Sudoku(size_t width, size_t height):inside_height(height), inside_width(width) {
     std::cout << "Creating Sudoku" << std::endl;
 
-    if (h * w != Size) {
+    if (height * width != Size) {
         std::stringstream error_msg;
-        error_msg << "Inner grid of unexpected size " << h * w << " expected " << Size << "!\n";
-        throw new std::runtime_error(error_msg.str());
+        error_msg << "Inner grid of unexpected size " << height * width << " expected " << Size << "!\n";
+        throw std::runtime_error(error_msg.str());
     }
 
     for (size_t x = 0; x < Size; x++) {
@@ -110,8 +108,8 @@ Sudoku<Size>::Sudoku(size_t w, size_t h):inside_height(h), inside_width(w) {
 };
 
 template<size_t Size>
-Sudoku<Size>::Sudoku(Grid_t p_grid, const size_t w, const size_t h) : grid(p_grid), inside_width(w),
-                                                                      inside_height(h) {
+Sudoku<Size>::Sudoku(Grid_t p_grid, const size_t width, const size_t height) : grid(p_grid), inside_width(width),
+                                                                      inside_height(height) {
 
 };
 
@@ -129,7 +127,35 @@ Sudoku<Size>::Sudoku(const Sudoku<Size> &sudoku)
 
 template<size_t Size>
 const bool Sudoku<Size>::isCorrect() const {
-    //size_t flag;
+    std::array<bool, Size> flagRow, flagColumn, flagGrid;
+    size_t inner_x, inner_y;
+    for (size_t x = 0; x < Size; x++) {
+        flagRow.fill(false);
+        flagColumn.fill(false);
+        flagGrid.fill(false);
+        for (size_t y = 0; y < Size; y++) {
+            if (grid[y][x] != 0) {
+                if (flagColumn[grid[y][x]]) {
+                    return false;
+                }
+                flagColumn[grid[y][x]] = true;
+            }
+            if (grid[x][y] != 0) {
+                if (flagRow[grid[x][y]]) {
+                    return false;
+                }
+                flagRow[grid[x][y]] = true;
+            }
+            inner_x = x % height() * width() + y % width();
+            inner_y = x / height() * height() + y / width();
+            if (grid[inner_x][inner_y] != 0) {
+                if (flagGrid[grid[inner_x][inner_y]]) {
+                    return false;
+                }
+                flagGrid[grid[inner_x][inner_y]] = true;
+            }
+        }
+    }
     //TODO
     return true;
 };
@@ -159,5 +185,5 @@ const size_t Sudoku<Size>::width() const {
 };
 
 
-#endif //LEARNINGCPP_SUDOKU_CPP
+#endif //LEARNING_CPP_SUDOKU_CPP
 

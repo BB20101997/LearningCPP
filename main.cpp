@@ -1,15 +1,16 @@
 #include <iostream>
-#include <exception>
 #include "Sudoku.hpp"
 
-template<int Size>
+template<size_t Size>
 void printSudoku(const Sudoku<Size> &orig, const Sudoku<Size> &current) {
 
-    for (size_t i = 0; i < orig.size()  + orig.size() / orig.width() +1; i++) {
-        std::cout << '_';
-    }
-    std::cout << std::endl;
     for (size_t x = 0; x < orig.size(); x++) {
+        if(x%orig.height()==0){
+            for (size_t i = 0; i < orig.size()  + orig.size() / orig.width() +1; i++) {
+                std::cout << '_';
+            }
+            std::cout << std::endl;
+        }
         std::cout << '|';
         for (size_t y = 0; y < orig.size(); y++) {
             if (orig.valueAt(x, y) == current.valueAt(x, y)) {
@@ -27,6 +28,10 @@ void printSudoku(const Sudoku<Size> &orig, const Sudoku<Size> &current) {
         }
         std::cout << std::endl;
     }
+    for (size_t i = 0; i < orig.size()  + orig.size() / orig.width() +1; i++) {
+        std::cout << '_';
+    }
+    std::cout << std::endl;
 };
 
 int main() try {
@@ -36,7 +41,7 @@ int main() try {
     std::cout << "Playing a Game of " << game.size() << "x" << game.size() << "-Sudoku" << std::endl;
     const Sudoku<9> orig{game};
 
-    int x,y,v;
+    size_t x,y,v;
 
     while (!game.isSolved()) {
         printSudoku(orig, game);
@@ -47,12 +52,15 @@ int main() try {
         if(v==-1){
             break;
         }
-        game.tryInsert(v,x-1,y-1);
+        if(!game.tryInsert(v,x-1,y-1)){
+          std::cout << "Invalid move\n";
+        }
     }
 
     return 0;
 
 }
 catch (std::exception &error) {
-	std::cerr << "Unbehandelter Fehler: " << error.what();
+    //this code is reacheable if an exception is thrown
+	std::cerr << "Unbehandelter Fehler: " << error.what()<<'\n';
 }
